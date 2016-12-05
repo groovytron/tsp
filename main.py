@@ -11,3 +11,7 @@ if __name__ == "__main__":
             cityname, x, y = line.split()
             cities[cityname] = City(cityname, (int(x), int(y)))
         print(cities)
+
+    import gui_parser
+    cities2 = gui_parser.get_cities();
+    print(cities2)
