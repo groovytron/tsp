@@ -2,6 +2,7 @@ def get_cities():
     import pygame
     from pygame.locals import KEYDOWN, QUIT, MOUSEBUTTONDOWN, K_RETURN, K_ESCAPE
     import sys
+    from city import City
 
     screen_x = 500
     screen_y = 500
@@ -17,19 +18,19 @@ def get_cities():
     screen = pygame.display.get_surface()
     font = pygame.font.Font(None, 30)
 
+    i=0
 
-    def draw(positions):
+    def draw(cities):
         screen.fill(0)
-        for pos in positions:
-            pygame.draw.circle(screen, city_color, pos, city_radius)
-        text = font.render("Nombre: %i" % len(positions), True, font_color)
+        for city in cities:
+            pygame.draw.circle(screen, city_color, city.position, city_radius)
+        text = font.render("Nombre: %i" % len(cities), True, font_color)
         textRect = text.get_rect()
         screen.blit(text, textRect)
         pygame.display.flip()
 
 
-    cities = []
-    draw(cities)
+    cities = {}
 
     collecting = True
 
@@ -40,8 +41,10 @@ def get_cities():
             elif event.type == KEYDOWN and event.key == K_RETURN:
                 collecting = False
             elif event.type == MOUSEBUTTONDOWN:
-                cities.append(pygame.mouse.get_pos())
-                draw(cities)
+                pos =pygame.mouse.get_pos()
+                name = "v{}".format(i)
+                cities[name] = City(name,pos)
+                i=i+1
+                draw(cities.values())
 
-    screen.fill(0)
     return cities
