@@ -38,6 +38,13 @@ class Gui:
 
     def place_cities(self):
         city_counter = 0
+        self.screen.fill(0)
+        text = self.font.render(
+            "Placez vos point puis appuyez sur Enter", True, self.font_color
+        )
+        textRect = text.get_rect()
+        self.screen.blit(text, textRect)
+        pygame.display.flip()
         while self.collecting:
             for event in pygame.event.get():
                 if (event.type == QUIT or
