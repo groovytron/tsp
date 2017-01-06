@@ -7,11 +7,12 @@ if __name__ == "__main__":
 
     with open('data/pb005.txt', encoding='utf-8') as positions_file:
         for line in positions_file:
-            # pour chaque ligne, on crée une ville avec les coordonnées associées
+            # pour chaque ligne, on crée une ville avec les coordonnées
+            # associées
             cityname, x, y = line.split()
             cities[cityname] = City(cityname, (int(x), int(y)))
         print(cities)
 
     import gui_parser
-    cities2 = gui_parser.get_cities();
+    cities2 = gui_parser.get_cities()
     print(cities2)
