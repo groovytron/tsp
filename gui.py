@@ -30,7 +30,8 @@ class Gui:
     def wait_for_user_input(self):
         while self.collecting:
             for event in pygame.event.get():
-                if (event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE)):
+                if (event.type == QUIT or
+                        (event.type == KEYDOWN and event.key == K_ESCAPE)):
                     sys.exit(0)
                 elif event.type == KEYDOWN and event.key == K_RETURN:
                     self.collecting = False
@@ -39,7 +40,8 @@ class Gui:
         city_counter = 0
         while self.collecting:
             for event in pygame.event.get():
-                if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+                if (event.type == QUIT or
+                        (event.type == KEYDOWN and event.key == K_ESCAPE)):
                     sys.exit(0)
                 elif event.type == KEYDOWN and event.key == K_RETURN:
                     self.collecting = False
