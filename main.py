@@ -1,8 +1,10 @@
+import random
+
 from solution import Solution
 from travel import City
 from gui import Gui
 
-def main():
+def get_cities():
     # dictionnaire contenant les villes
     # clé: nom de la ville, valeur: objet City
     cities = {}
@@ -21,7 +23,17 @@ def main():
     else:
         gui = Gui()
         cities = gui.cities
+    return cities
 
 
 if __name__ == "__main__":
-    main()
+    cities = list(get_cities().values())
+    population = []
+    for i in range(10):
+        copy = cities
+        random.shuffle(copy)
+        population.append(Solution(copy))
+        print(population[-1])
+    population.sort()
+    print("best solution :", population[0])
+    print("worst solution :", population[-1])
