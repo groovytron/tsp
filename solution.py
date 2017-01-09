@@ -4,24 +4,25 @@ class Solution:
     def __init__(self, cities):
         # cities is an ordered list of cities, the last one is linked to the first one
         self.cities = copy.deepcopy(cities)
+        self.compute_fitness()
+
+    def compute_fitness(self):
         self.fitness = 0
 
-        # compute fitness
-        old_pos = cities[0].position
-        for city in cities:
-            new_pos = city.position
-            # dx, dy = abs(old_pos - new_pos)
+        def dist(pos1, pos2):
             dx, dy = abs(old_pos[0] - new_pos[0]), abs(old_pos[1] - new_pos[1])
+            return (dx*dx + dy*dy) ** .5
+
+        old_pos = self.cities[0].position
+        for city in self.cities:
+            new_pos = city.position
             # add to the fitness the distance between this city and the previous one
-            self.fitness += (dx*dx + dy*dy) ** .5
+            self.fitness += dist(old_pos, new_pos)
             old_pos = new_pos
 
         # compute distance from the last city to the first
-        # old_pos contains position of the last city in the list
-        new_pos = cities[0].position
-        # warning : repeated code (maybe lambda ?)
-        dx, dy = abs(old_pos[0] - new_pos[0]), abs(old_pos[1] - new_pos[1])
-        self.fitness += (dx*dx + dy*dy) ** .5
+        new_pos = self.cities[0].position
+        self.fitness += dist(old_pos, new_pos)
 
     # these 2 methods makes solutions comparable
     def __eq__(self, other):

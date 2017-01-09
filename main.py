@@ -26,7 +26,7 @@ def main():
 
     cities = list(cities.values())
     population = []
-    for i in range(5):
+    for i in range(100):
         random.shuffle(cities)
         population.append(Solution(cities))
 
