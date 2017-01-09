@@ -1,7 +1,8 @@
+from solution import Solution
 from travel import City
 from gui import Gui
 
-if __name__ == "__main__":
+def main():
     # dictionnaire contenant les villes
     # clé: nom de la ville, valeur: objet City
     cities = {}
@@ -19,3 +20,8 @@ if __name__ == "__main__":
             gui = Gui(cities)
     else:
         gui = Gui()
+        cities = gui.cities
+
+
+if __name__ == "__main__":
+    main()
