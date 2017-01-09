@@ -1,7 +1,9 @@
+import copy
+
 class Solution:
     def __init__(self, cities):
         # cities is an ordered list of cities, the last one is linked to the first one
-        self.cities = cities
+        self.cities = copy.deepcopy(cities)
         self.fitness = 0
 
         # compute fitness

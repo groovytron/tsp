@@ -17,7 +17,6 @@ class Gui:
         pygame.display.set_caption('Exemple')
         self.screen = pygame.display.get_surface()
         self.font = pygame.font.Font(None, 30)
-        self.collecting = True
 
         if cities:
             self.cities = cities
@@ -27,14 +26,15 @@ class Gui:
             self.cities = {}
             self.place_cities()
 
+
+
     def wait_for_user_input(self):
-        while self.collecting:
-            for event in pygame.event.get():
-                if (event.type == QUIT or
-                        (event.type == KEYDOWN and event.key == K_ESCAPE)):
-                    sys.exit(0)
-                elif event.type == KEYDOWN and event.key == K_RETURN:
-                    self.collecting = False
+        while True:
+            event = pygame.event.wait()
+            if (event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE)):
+                sys.exit(0)
+            elif event.type == KEYDOWN and event.key == K_RETURN:
+                break
 
     def place_cities(self):
         city_counter = 0
@@ -45,19 +45,16 @@ class Gui:
         textRect = text.get_rect()
         self.screen.blit(text, textRect)
         pygame.display.flip()
-        while self.collecting:
+        while True:
             for event in pygame.event.get():
-                if (event.type == QUIT or
-                        (event.type == KEYDOWN and event.key == K_ESCAPE)):
-                    sys.exit(0)
-                elif event.type == KEYDOWN and event.key == K_RETURN:
-                    self.collecting = False
-                elif event.type == MOUSEBUTTONDOWN:
+                if event.type == MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
                     name = "v{}".format(city_counter)
                     self.cities[name] = City(name, pos)
                     city_counter = city_counter + 1
                     self.draw()
+                elif event.type == KEYDOWN:
+                    return
 
     def draw(self):
         self.screen.fill(0)
@@ -70,6 +67,14 @@ class Gui:
         text = self.font.render(
             "Nombre: {}".format(len(self.cities)), True, self.font_color
         )
+        textRect = text.get_rect()
+        self.screen.blit(text, textRect)
+        pygame.display.flip()
+
+    def draw_path(self, points, msg="" , color=[0,255,0]):
+        self.screen.fill(0)
+        pygame.draw.lines(self.screen, color, True, points)
+        text = self.font.render(msg, True, self.font_color)
         textRect = text.get_rect()
         self.screen.blit(text, textRect)
         pygame.display.flip()

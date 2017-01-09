@@ -4,7 +4,7 @@ from solution import Solution
 from travel import City
 from gui import Gui
 
-def get_cities():
+def main():
     # dictionnaire contenant les villes
     # clé: nom de la ville, valeur: objet City
     cities = {}
@@ -23,17 +23,24 @@ def get_cities():
     else:
         gui = Gui()
         cities = gui.cities
-    return cities
+
+    cities = list(cities.values())
+    population = []
+    for i in range(5):
+        random.shuffle(cities)
+        population.append(Solution(cities))
+
+    population.sort()
+
+    bad = population[-1].cities
+    better = population[0].cities
+
+    gui.draw_path([city.position for city in bad], msg="bad solution", color=[255,0,0])
+    gui.wait_for_user_input()
+
+    gui.draw_path([city.position for city in better], msg="better solution")
+    gui.wait_for_user_input()
 
 
 if __name__ == "__main__":
-    cities = list(get_cities().values())
-    population = []
-    for i in range(10):
-        copy = cities
-        random.shuffle(copy)
-        population.append(Solution(copy))
-        print(population[-1])
-    population.sort()
-    print("best solution :", population[0])
-    print("worst solution :", population[-1])
+    main()
