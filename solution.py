@@ -33,3 +33,11 @@ class Solution:
 
     def __repr__(self):
         return "solution with fitness {}".format(self.fitness)
+
+    def crossing(self, other):
+        children = []
+        # todo
+        return children
+
+    def mutate(self):
+        pass
