@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import KEYDOWN, QUIT, MOUSEBUTTONDOWN, K_RETURN, K_ESCAPE
 import sys
-from travel import City
+from city import City
 
 
 class Gui:
