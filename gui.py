@@ -14,7 +14,7 @@ class Gui:
         self.font_color = [255, 255, 255]  # white
         pygame.init()
         self.window = pygame.display.set_mode((self.screen_x, self.screen_y))
-        pygame.display.set_caption('Exemple')
+        pygame.display.set_caption('Travelling Salesman Problem')
         self.screen = pygame.display.get_surface()
         self.font = pygame.font.Font(None, 30)
 
@@ -26,24 +26,18 @@ class Gui:
             self.cities = {}
             self.place_cities()
 
-
-
     def wait_for_user_input(self):
         while True:
             event = pygame.event.wait()
             if (event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE)):
                 sys.exit(0)
-            elif event.type == KEYDOWN and event.key == K_RETURN:
+            elif event.type == KEYDOWN:
                 break
 
     def place_cities(self):
         city_counter = 0
         self.screen.fill(0)
-        text = self.font.render(
-            "Placez vos point puis appuyez sur Enter", True, self.font_color
-        )
-        textRect = text.get_rect()
-        self.screen.blit(text, textRect)
+        self.text("Placez vos point puis appuyez sur Enter")
         pygame.display.flip()
         while True:
             for event in pygame.event.get():
@@ -53,6 +47,8 @@ class Gui:
                     self.cities[name] = City(name, pos)
                     city_counter = city_counter + 1
                     self.draw()
+                elif (event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE)):
+                    sys.exit(0)
                 elif event.type == KEYDOWN:
                     return
 
@@ -64,17 +60,16 @@ class Gui:
                 self.screen, self.city_color, city.position, self.city_radius
             )
 
-        text = self.font.render(
-            "Nombre: {}".format(len(self.cities)), True, self.font_color
-        )
-        textRect = text.get_rect()
-        self.screen.blit(text, textRect)
+        self.text("Nombre: {}".format(len(self.cities)))
         pygame.display.flip()
 
     def draw_path(self, points, msg="" , color=[0,255,0]):
         self.screen.fill(0)
         pygame.draw.lines(self.screen, color, True, points)
+        self.text(msg)
+        pygame.display.flip()
+
+    def text(self, msg):
         text = self.font.render(msg, True, self.font_color)
         textRect = text.get_rect()
         self.screen.blit(text, textRect)
-        pygame.display.flip()
