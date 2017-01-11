@@ -19,9 +19,21 @@ class Link:
 class City:
     def __init__(self, name, position):
         self.name = name
-        self.links = []
         # tuple (x,y)
         self.position = position
+        # contiendra la ville d'après
+        self.next = None
+        self.dist = None
+
+    def __eq__(self, other):
+        try:
+            return self.name == other.name and self.position == other.position
+        except AttributeError:
+            return False
+
+    def __hash__(self):
+        return hash(self.name)
+
 
     def add_link(self, link):
         self.links.append(link)
