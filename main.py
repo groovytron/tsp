@@ -1,5 +1,4 @@
 import random
-from collections import deque
 
 from solution import Solution
 from city import City
@@ -7,6 +6,10 @@ from gui import Gui
 
 
 def main():
+    """
+    Main function parsing file, initializing UI and launching genetic
+    algorithm solving method.
+    """
     # dictionnaire contenant les villes
     # clé: nom de la ville, valeur: objet City
     cities = {}
@@ -64,39 +67,28 @@ def main():
 
 
 def crossover(x, y, start=2, stop=4):
-    print('x', x)
-    print('y', y)
+    """
+    Crossover x and y indviduals' genes at indices between start and stop.
+
+    The two children are generated and returned as a tuple containing.
+    """
     x_crossover = tuple(x[start:stop])
     y_crossover = tuple(y[start:stop])
-    print('crossovers')
-    print(x_crossover)
-    print(y_crossover)
     prepared_x = [item if item not in y_crossover else None for item in x]
     x_shifts = prepared_x[stop:].count(None)
     prepared_y = [item if item not in x_crossover else None for item in y]
     y_shifts = prepared_y[stop:].count(None)
-    print('shifts')
-    print(prepared_x, x_shifts)
-    print(prepared_y, y_shifts)
     new_x = [item for item in prepared_x if item is not None]
     new_y = [item for item in prepared_y if item is not None]
-    print('without Nones')
-    print(new_x)
-    print(new_y)
     new_x = shift_list(new_x, x_shifts)
     new_y = shift_list(new_y, y_shifts)
-    print('shifted')
-    print(new_x)
-    print(new_y)
     new_x = new_x[:start] + list(y_crossover) + new_x[start:]
     new_y = new_y[:start] + list(x_crossover) + new_y[start:]
-    print('crossovered')
-    print(new_x)
-    print(new_y)
     return new_x, new_y
 
 
 def shift_list(items, shifts):
+    """Left shift a list of elements."""
     for i in range(shifts):
         items = items[1:] + items[:1]
     return items

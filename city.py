@@ -1,5 +1,8 @@
 class City:
+    """Class representing a city."""
+
     def __init__(self, name, position):
+        """Name is city's name and position is a two floats tuple."""
         self.name = name
         self.position = position
 
@@ -11,5 +14,4 @@ class City:
             return False
 
     def __repr__(self):
-        str = "{} {}\n".format(self.name, self.position)
-        return str
+        return "{} {}\n".format(self.name, self.position)

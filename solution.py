@@ -1,8 +1,12 @@
 import copy
 
+
 class Solution:
     def __init__(self, cities):
-        # cities is an ordered list of cities, the last one is linked to the first one
+        """
+        cities is an ordered list of cities, the last one is linked to the
+        first one
+        """
         self.cities = copy.deepcopy(cities)
         self.compute_fitness()
 
@@ -16,7 +20,10 @@ class Solution:
         old_pos = self.cities[0].position
         for city in self.cities:
             new_pos = city.position
-            # add to the fitness the distance between this city and the previous one
+            """
+            add to the fitness the distance between this city and the previous
+            one
+            """
             self.fitness += dist(old_pos, new_pos)
             old_pos = new_pos
 
