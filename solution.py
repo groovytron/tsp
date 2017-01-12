@@ -1,10 +1,14 @@
 import copy, random
 from operator import attrgetter
+from functools import total_ordering
 
-
+@total_ordering
 class Solution:
     def __init__(self, cities):
-        # cities is an ordered list of cities, the last one is linked to the first one
+        """
+        cities is an ordered list of cities, the last one is linked to the
+        first one
+        """
         self.cities = copy.deepcopy(cities)
         self.compute_fitness()
 
@@ -13,22 +17,20 @@ class Solution:
         self.dict = {}
 
         def dist(pos1, pos2):
-            dx, dy = abs(pos1[0] - pos2[0]), abs(pos1[1] - pos2[1])
+            dx, dy = pos1[0] - pos2[0], pos1[1] - pos2[1]
             return (dx*dx + dy*dy) ** .5
 
         old_city = self.cities[0]
         for city in self.cities + [old_city]:
-            # add to the fitness the distance between this city and the previous one
             distance = dist(old_city.position, city.position)
+            # add to the fitness the distance between this city and the previous one
             self.fitness += distance
             old_city.next = city
             old_city.dist = distance
             self.dict[old_city.name] = old_city
             old_city = city
 
-
-
-    # these 2 methods makes solutions comparable
+    # total_ordering makes solutions comparable from these 2 methods
     def __eq__(self, other):
         return self.fitness == other.fitness
 
