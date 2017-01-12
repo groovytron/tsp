@@ -69,7 +69,8 @@ class Gui:
         self.text(msg)
         pygame.display.flip()
 
-    def text(self, msg):
+    def text(self, msg, render=False):
         text = self.font.render(msg, True, self.font_color)
         textRect = text.get_rect()
         self.screen.blit(text, textRect)
+        if render: pygame.display.flip()

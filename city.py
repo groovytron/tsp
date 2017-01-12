@@ -6,7 +6,11 @@ class City:
         self.name = name
         self.position = position
 
-    # these 2 methods makes solutions comparable
+        # will contain the next city and the distance to it
+        # when creating a solution
+        self.next = None
+        self.dist = None
+
     def __eq__(self, other):
         try:
             return self.name == other.name and self.position == other.position
@@ -15,3 +19,6 @@ class City:
 
     def __repr__(self):
         return "{} {}\n".format(self.name, self.position)
+
+    def __hash__(self):
+        return hash(self.name)

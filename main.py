@@ -14,8 +14,8 @@ def main():
     # clé: nom de la ville, valeur: objet City
     cities = {}
 
-    file_name = 'data/pb005.txt'
-    # file_name = ''
+    # file_name = 'data/pb005.txt'
+    file_name = ''
 
     if file_name:
         with open(file_name, encoding='utf-8') as positions_file:
@@ -31,38 +31,64 @@ def main():
 
     cities = list(cities.values())
     population = []
-    for i in range(100):
+
+    POPULATION_SIZE = 12
+    HALF = int(POPULATION_SIZE/2) # int car la division retourne un float dans tous les cas
+
+    for i in range(POPULATION_SIZE):
         random.shuffle(cities)
         population.append(Solution(cities))
 
     population.sort()
 
-    bad = population[-1].cities
-    better = population[0].cities
+    old_best = population[0]
+    gui.draw_path([city.position for city in old_best.cities])
+    stagnation = 0
 
-    # Population selection
-    selected_population = [
-        random.choice(population) for i in range(int(len(population) / 2) - 1)
-    ]
-    selected_population.append(better)
 
-    # Crossover tests
-    print('crossover between bad and better')
-    child1, child2 = crossover(bad, better)
-    print('child 1', child1)
-    print('child 2', child2)
-    print('Resulting new population adaptaility comparison')
-    print('better', Solution(better))
-    print('bad', Solution(bad))
-    print('child 1', Solution(child1))
-    print('child 2', Solution(child2))
+    # algo génétique
+    while True:
+        # trier la population
+        population.sort()
 
-    gui.draw_path(
-       [city.position for city in bad], msg="bad solution", color=[255, 0, 0]
-    )
-    gui.wait_for_user_input()
+        best = population[0]
 
-    gui.draw_path([city.position for city in better], msg="better solution")
+        # selection : enlever la moitié
+        # todo: selection par roulette ou par rang
+        population = population[:HALF] # sélectionne la moitié meilleure
+
+        # mélange la population
+        random.shuffle(population)
+
+        # croisement
+        for i in range(0, HALF, 2): # 0 to HALF 2-by-2
+            sol1 = population[i]
+            sol2 = population[i+1]
+            # ajoute les enfants à la population
+            population += sol1.crossing(sol2)
+            population += list(crossover(sol1, sol2))
+
+        # muter 20% des solutions
+        [solution.mutate() for solution in random.sample(population, int(0.2*len(population)))]
+
+        # temporaire : remplissage avec des solutions random
+        while len(population) < POPULATION_SIZE:
+            random.shuffle(cities)
+            population.append(Solution(cities))
+
+        # sortir si la meilleure solution est la même n fois de suite
+        if best == old_best:
+            stagnation += 1
+            if stagnation == 500:
+                break
+        else:
+            stagnation = 0
+            gui.draw_path([city.position for city in best.cities], msg=str(best.fitness))
+
+        old_best = best
+
+    gui.draw_path([city.position for city in best.cities], msg="voilà")
+
     gui.wait_for_user_input()
 
 
@@ -72,6 +98,7 @@ def crossover(x, y, start=2, stop=4):
 
     The two children are generated and returned as a tuple containing.
     """
+    x,y = x.cities, y.cities
     x_crossover = tuple(x[start:stop])
     y_crossover = tuple(y[start:stop])
     prepared_x = [item if item not in y_crossover else None for item in x]
@@ -84,7 +111,7 @@ def crossover(x, y, start=2, stop=4):
     new_y = shift_list(new_y, y_shifts)
     new_x = new_x[:start] + list(y_crossover) + new_x[start:]
     new_y = new_y[:start] + list(x_crossover) + new_y[start:]
-    return new_x, new_y
+    return Solution(new_x), Solution(new_y)
 
 
 def shift_list(items, shifts):

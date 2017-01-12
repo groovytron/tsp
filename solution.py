@@ -1,6 +1,8 @@
-import copy
+import copy, random
+from operator import attrgetter
+from functools import total_ordering
 
-
+@total_ordering
 class Solution:
     def __init__(self, cities):
         """
@@ -12,26 +14,23 @@ class Solution:
 
     def compute_fitness(self):
         self.fitness = 0
+        self.dict = {}
 
         def dist(pos1, pos2):
-            dx, dy = abs(old_pos[0] - new_pos[0]), abs(old_pos[1] - new_pos[1])
+            dx, dy = pos1[0] - pos2[0], pos1[1] - pos2[1]
             return (dx*dx + dy*dy) ** .5
 
-        old_pos = self.cities[0].position
-        for city in self.cities:
-            new_pos = city.position
-            """
-            add to the fitness the distance between this city and the previous
-            one
-            """
-            self.fitness += dist(old_pos, new_pos)
-            old_pos = new_pos
+        old_city = self.cities[0]
+        for city in self.cities + [old_city]:
+            distance = dist(old_city.position, city.position)
+            # add to the fitness the distance between this city and the previous one
+            self.fitness += distance
+            old_city.next = city
+            old_city.dist = distance
+            self.dict[old_city.name] = old_city
+            old_city = city
 
-        # compute distance from the last city to the first
-        new_pos = self.cities[0].position
-        self.fitness += dist(old_pos, new_pos)
-
-    # these 2 methods makes solutions comparable
+    # total_ordering makes solutions comparable from these 2 methods
     def __eq__(self, other):
         return self.fitness == other.fitness
 
@@ -40,3 +39,43 @@ class Solution:
 
     def __repr__(self):
         return "solution with fitness {}".format(self.fitness)
+
+    def crossing(self, mother):
+        """
+        En partant d’une ville au hasard, considérer la ville suivante dans chacun des
+        parents et choisir la plus proche. Si celle-ci est déjà présente dans la solution, prendre
+        l’autre. Si elle est aussi déjà présente, choisir une ville non présente au hasard.
+        """
+        children = []
+        for i in range(2):
+            father = self
+            cities = []
+            names = [city.name for city in self.cities]
+            chosen_name = random.choice(names)
+            while len(names) > 0:
+                names.remove(chosen_name)
+                current_city = self.dict[chosen_name]
+                cities.append(current_city)
+                from_father = father.dict[chosen_name]
+                from_mother = mother.dict[chosen_name]
+
+                candidates = []
+                if from_father.next.name in names:
+                    candidates += [from_father]
+                if from_mother.next.name in names:
+                    candidates += [from_mother]
+
+                if len(candidates) > 0:
+                    # on peut utlisier un gene de l'un des parents
+                    candidates.sort(key=attrgetter('dist'))
+                    chosen_name = candidates[0].next.name
+                else:
+                    # on ne peut pas car 2 villes-next sont deja utilisées dans la nouvelle solution
+                    if names:
+                        chosen_name = random.choice(names)
+            children += [Solution(cities)]
+
+        return children
+
+    def mutate(self):
+        pass
