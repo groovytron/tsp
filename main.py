@@ -26,7 +26,11 @@ def main():
 
     cities = list(cities.values())
     population = []
-    for i in range(10):
+
+    POPULATION_SIZE = 12
+    HALF = int(POPULATION_SIZE/2) # int car la division retourne un float dans tous les cas
+
+    for i in range(POPULATION_SIZE):
         random.shuffle(cities)
         population.append(Solution(cities))
 
@@ -41,32 +45,32 @@ def main():
         # trier la population
         population.sort()
 
-        # sortir la meilleure solution
-        best = population.pop(0)
+        best = population[0]
 
-        # selectionner qlqs couples
-        couples = []
-        for i in range(2):
-            # todo: selection par roulette ou par rang
-            couples.append((population.pop(0), population.pop(0)))
+        # selection : enlever la moitié
+        # todo: selection par roulette ou par rang
+        population = population[:HALF] # sélectionne la moitié meilleure
 
-        # croisement des paires
-        children = []
-        for sol1, sol2 in couples:
-            children += sol1.crossing(sol2)
+        # mélange la population
+        random.shuffle(population)
 
-        # remplacer une partie de la population par les enfants obtenus
-        population = [best] + children
+        # croisement
+        for i in range(0, HALF, 2): # 0 to HALF 2-by-2
+            sol1 = population[i]
+            sol2 = population[i+1]
+            # ajoute les enfants à la population
+            population += sol1.crossing(sol2)
+
+        # muter 20% des solutions
+        [solution.mutate() for solution in random.sample(population, int(0.2*len(population)))]
 
         # temporaire : remplissage avec des solutions random
-        while len(population) < 10:
+        while len(population) < POPULATION_SIZE:
             random.shuffle(cities)
             population.append(Solution(cities))
 
-        # muter qlqs solutions
-
         # sortir si la meilleure solution est la même n fois de suite
-        if best is old_best:
+        if best == old_best:
             stagnation += 1
             if stagnation == 500:
                 break

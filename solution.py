@@ -45,7 +45,7 @@ class Solution:
         l’autre. Si elle est aussi déjà présente, choisir une ville non présente au hasard.
         """
         children = []
-        for i in range(1):
+        for i in range(2):
             father = self
             cities = []
             names = [city.name for city in self.cities]
