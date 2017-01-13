@@ -9,7 +9,7 @@ class Solution:
         cities is an ordered list of cities, the last one is linked to the
         first one
         """
-        self.cities = copy.deepcopy(cities)
+        self.cities = copy.copy(cities)
         self.compute_fitness()
 
     def compute_fitness(self):
@@ -78,4 +78,14 @@ class Solution:
         return children
 
     def mutate(self):
-        pass
+        # trie les villes par plus longue distance avec la prochaine
+        misplaced_cities = sorted(self.cities, key=attrgetter('dist'), reverse=True)
+        # i contient l'index dans self.cities de la ville la plus "mal placée"
+        # j = i = self.cities.index(misplaced_cities[0].next)
+        i = j =  random.randrange(len(self.cities))
+        # j est tiré au hasard parmis les autres index
+        while j == i:
+            j = random.randrange(len(self.cities))
+        # on les échange simplement
+        self.cities[i], self.cities[j] = self.cities[j], self.cities[i]
+        self.compute_fitness()

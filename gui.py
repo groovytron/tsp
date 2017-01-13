@@ -63,7 +63,7 @@ class Gui:
         self.text("Nombre: {}".format(len(self.cities)))
         pygame.display.flip()
 
-    def draw_path(self, points, msg="" , color=[0,255,0]):
+    def draw_path(self, points, msg="" , color=[255,0,0]):
         self.screen.fill(0)
         pygame.draw.lines(self.screen, color, True, points)
         self.text(msg)
