@@ -1,0 +1,90 @@
+50 villes
+100 solutions
+selection elite pif
+15s
+mutation random simple
+20% de mutation
+
+3323
+3523
+3328
+
+selection elite
+3403
+3485
+3270
+
+re selection elite pif
+3200
+3887
+3033
+
+mutation longue distance
+3183
+3551
+3400
+3621
+
+mutation 10*random
+4375
+4829
+mutation 2*random
+3539
+3847
+4169
+sans mutation
+7647
+7626
+mutation random simple
+10% de mutation
+3900
+3333
+3551
+30% de mutation
+3235
+3418
+3014
+3011
+3163
+50% de mutation
+3345
+3300
+3396
+100% de mutation
+4630
+5500
+
+20% de mutation
+3482
+3687
+3476
+
+30% de mutation
+mutation par bloc
+3220
+2977
+3105
+3042
+2994
+3111
+
+mutation par bloc avec inversion initiale
+3318
+3017
+2970
+3041
+2910
+3127
+
+20% de mutation
+3008
+3041
+3076
+
+re 30%
+3053
+3024
+3255
+
+taux de mutation variable 
+todo

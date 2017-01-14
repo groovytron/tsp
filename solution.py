@@ -78,14 +78,28 @@ class Solution:
         return children
 
     def mutate(self):
-        # trie les villes par plus longue distance avec la prochaine
-        misplaced_cities = sorted(self.cities, key=attrgetter('dist'), reverse=True)
-        # i contient l'index dans self.cities de la ville la plus "mal placée"
-        # j = i = self.cities.index(misplaced_cities[0].next)
-        i = j =  random.randrange(len(self.cities))
-        # j est tiré au hasard parmis les autres index
-        while j == i:
-            j = random.randrange(len(self.cities))
-        # on les échange simplement
-        self.cities[i], self.cities[j] = self.cities[j], self.cities[i]
+        # inverse deux blocs (pas indispensable)
+        # ABCDEF devient
+        # CDEFAB
+        # la solution reste la même, ça permet juste de donner des chances au segment FA d'être muté
+        pivot = random.randrange(len(self.cities))
+        self.cities = self.cities[pivot:] + self.cities[:pivot]
+
+        # i <- borne inférieure, j <- borne supérieure
+        i = random.randrange(len(self.cities)-1)
+        j = random.randrange(i+1, len(self.cities))
+
+        # C
+        # D
+        # E <-- i
+        # F
+        # A <-- j
+        # B
+
+        top = self.cities[:i] # CD
+        middle = self.cities[i:j] # EF
+        bottom = self.cities[j:] # AB
+        # reordonne les blocs
+        self.cities = middle + top + bottom # EFCDAB
+
         self.compute_fitness()

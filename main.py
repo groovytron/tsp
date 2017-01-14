@@ -14,7 +14,7 @@ def main():
     # clé: nom de la ville, valeur: objet City
     cities = {}
 
-    file_name = 'data/pb005.txt'
+    file_name = 'data/pb050.txt'
     # file_name = ''
 
     if file_name:
@@ -32,13 +32,14 @@ def main():
     cities = list(cities.values())
     population = []
 
-    max_time = 1
+    max_time = 15
     t1 = time.time()
-    POPULATION_SIZE = 10
+    POPULATION_SIZE = 100
     HALF = int(POPULATION_SIZE/2) # int car la division retourne un float dans tous les cas
+    QUARTER = int(POPULATION_SIZE/4)
 
     RANGS = [POPULATION_SIZE-i for i in range(POPULATION_SIZE+1) for j in range(i)]
-    # RANGS contient n*0,  (n-1)*1 ... 1*9
+    # RANGS contient n*0,  (n-1)*1 ... 1*n -> exemple 10, 9,9, 8,8,8, 7,7,7,7, ...
 
     for i in range(POPULATION_SIZE):
         random.shuffle(cities)
@@ -59,9 +60,14 @@ def main():
 
         best = Solution(population[0].cities)
 
-        # selection : enlever la moitié
-        # todo: selection par roulette ou par rang
-        population = population[:HALF] # sélectionne la moitié meilleure
+        # population = population[:HALF] # sélectionne la moitié meilleure
+
+        # selection un peu plus naturelle
+        # selectionne un quart d'élite
+        population = population[:QUARTER]
+        # puis sélectionne un autre quart au pif
+        reste = population[QUARTER:]
+        population += random.sample(population, QUARTER)
 
         # mélange la population
         random.shuffle(population)
