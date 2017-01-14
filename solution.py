@@ -16,13 +16,9 @@ class Solution:
         self.fitness = 0
         self.dict = {}
 
-        def dist(pos1, pos2):
-            dx, dy = pos1[0] - pos2[0], pos1[1] - pos2[1]
-            return (dx*dx + dy*dy) ** .5
-
         old_city = self.cities[0]
         for city in self.cities + [old_city]:
-            distance = dist(old_city.position, city.position)
+            distance = old_city.distance_to(city)
             # add to the fitness the distance between this city and the previous one
             self.fitness += distance
             old_city.next = city
@@ -103,3 +99,15 @@ class Solution:
         self.cities = middle + top + bottom # EFCDAB
 
         self.compute_fitness()
+
+    @staticmethod
+    def create_pseudo_best(cities):
+        ordered_cities = []
+        city = cities[0]
+        ordered_cities.append(city)
+        cities.remove(city)
+        while cities:
+            city = city.get_closest(cities)
+            ordered_cities.append(city)
+            cities.remove(city)
+        return Solution(ordered_cities)

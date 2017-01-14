@@ -14,8 +14,8 @@ def main():
     # clé: nom de la ville, valeur: objet City
     cities = {}
 
-    file_name = 'data/pb020.txt'
-    file_name = ''
+    file_name = 'data/pb050.txt'
+    # file_name = ''
 
     if file_name:
         with open(file_name, encoding='utf-8') as positions_file:
@@ -24,7 +24,7 @@ def main():
                 # associées
                 cityname, x, y = line.split()
                 cities[cityname] = City(cityname, (int(x), int(y)))
-            gui = Gui(cities)
+            gui = Gui(cities, file_name)
     else:
         gui = Gui()
         cities = gui.cities
@@ -32,8 +32,7 @@ def main():
     cities = list(cities.values())
     population = []
 
-    max_time = 5
-    t1 = time.time()
+    max_time = 15
     POPULATION_SIZE = 100
     HALF = int(POPULATION_SIZE/2) # int car la division retourne un float dans tous les cas
     QUARTER = int(POPULATION_SIZE/4)
@@ -47,13 +46,17 @@ def main():
         random.shuffle(cities)
         population.append(Solution(cities))
 
-    population.sort()
+    pseudo_best = Solution.create_pseudo_best(cities)
+    # gui.draw_path([city.position for city in pseudo_best.cities], msg="pseudo best with fitness:{}".format(pseudo_best.fitness), color=[255,255,0])
+    # gui.wait_for_user_input()
+    population.append(pseudo_best)
 
-    gui.draw_path([city.position for city in population[0].cities])
-    old_best = population[0].fitness
+    old_best=0
     stagnation = 0
 
     method_1 = True
+
+    t1 = time.time()
 
     # algo génétique
     while True:
@@ -64,16 +67,16 @@ def main():
 
         # population = population[:HALF] # sélectionne la moitié meilleure
 
-        # # selection un peu plus naturelle
-        # # selectionne un quart d'élite
-        # population = population[:QUARTER]
-        # # puis sélectionne un autre quart au pif
+        # selection un peu plus naturelle
+        # selectionne un quart d'élite
+        population = population[:QUARTER]
+        # puis sélectionne un autre quart au pif
         # reste = population[QUARTER:]
-        # population += random.sample(population, QUARTER)
+        population += random.sample(population, QUARTER)
 
-        # plus juste mais marche moins bien
-        elite, reste = population[:QUARTER], population[QUARTER:]
-        population = elite + random.sample(population, QUARTER)
+        # # plus juste mais marche moins bien
+        # elite, reste = population[:QUARTER], population[QUARTER:]
+        # population = elite + random.sample(population, QUARTER)
 
         # mélange la population
         random.shuffle(population)
@@ -110,7 +113,6 @@ def main():
         old_best = best.fitness
 
     gui.draw_path([city.position for city in best.cities], msg=str(best.fitness), color=[0,255,0])
-
     gui.wait_for_user_input()
 
 

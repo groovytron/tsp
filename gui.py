@@ -6,7 +6,7 @@ from city import City
 
 class Gui:
     """Gui screen using pygame."""
-    def __init__(self, cities=None):
+    def __init__(self, cities=None, file_name=''):
         self.screen_x = 500
         self.screen_y = 500
         self.city_color = [10, 10, 200]  # blue
@@ -21,6 +21,8 @@ class Gui:
         if cities:
             self.cities = cities
             self.draw_cities()
+            self.text(file_name)
+            pygame.display.flip()
             self.wait_for_user_input()
         else:
             self.cities = {}
