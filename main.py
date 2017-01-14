@@ -14,8 +14,8 @@ def main():
     # clé: nom de la ville, valeur: objet City
     cities = {}
 
-    file_name = 'data/pb050.txt'
-    # file_name = ''
+    file_name = 'data/pb020.txt'
+    file_name = ''
 
     if file_name:
         with open(file_name, encoding='utf-8') as positions_file:
@@ -32,11 +32,13 @@ def main():
     cities = list(cities.values())
     population = []
 
-    max_time = 15
+    max_time = 5
     t1 = time.time()
     POPULATION_SIZE = 100
     HALF = int(POPULATION_SIZE/2) # int car la division retourne un float dans tous les cas
     QUARTER = int(POPULATION_SIZE/4)
+    # taux de mutation
+    rate = 0.2
 
     RANGS = [POPULATION_SIZE-i for i in range(POPULATION_SIZE+1) for j in range(i)]
     # RANGS contient n*0,  (n-1)*1 ... 1*n -> exemple 10, 9,9, 8,8,8, 7,7,7,7, ...
@@ -62,12 +64,16 @@ def main():
 
         # population = population[:HALF] # sélectionne la moitié meilleure
 
-        # selection un peu plus naturelle
-        # selectionne un quart d'élite
-        population = population[:QUARTER]
-        # puis sélectionne un autre quart au pif
-        reste = population[QUARTER:]
-        population += random.sample(population, QUARTER)
+        # # selection un peu plus naturelle
+        # # selectionne un quart d'élite
+        # population = population[:QUARTER]
+        # # puis sélectionne un autre quart au pif
+        # reste = population[QUARTER:]
+        # population += random.sample(population, QUARTER)
+
+        # plus juste mais marche moins bien
+        elite, reste = population[:QUARTER], population[QUARTER:]
+        population = elite + random.sample(population, QUARTER)
 
         # mélange la population
         random.shuffle(population)
@@ -85,7 +91,7 @@ def main():
 
         # population.remove(best)
         # muter 20% des solutions
-        [solution.mutate() for solution in random.sample(population, int(0.2*len(population)))]
+        [solution.mutate() for solution in random.sample(population, int(rate*len(population)))]
         population.append(best)
 
         # sortir si la meilleure solution est la même n fois de suite

@@ -20,7 +20,7 @@ class Gui:
 
         if cities:
             self.cities = cities
-            self.draw()
+            self.draw_cities()
             self.wait_for_user_input()
         else:
             self.cities = {}
@@ -46,26 +46,26 @@ class Gui:
                     name = "v{}".format(city_counter)
                     self.cities[name] = City(name, pos)
                     city_counter = city_counter + 1
-                    self.draw()
+                    self.screen.fill(0)
+                    self.draw_cities()
+                    self.text("Nombre: {}".format(len(self.cities)))
+                    pygame.display.flip()
                 elif (event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE)):
                     sys.exit(0)
                 elif event.type == KEYDOWN:
                     return
 
-    def draw(self):
-        self.screen.fill(0)
-
+    def draw_cities(self):
         for city in self.cities.values():
             pygame.draw.circle(
                 self.screen, self.city_color, city.position, self.city_radius
             )
 
-        self.text("Nombre: {}".format(len(self.cities)))
-        pygame.display.flip()
 
     def draw_path(self, points, msg="" , color=[255,0,0]):
         self.screen.fill(0)
         pygame.draw.lines(self.screen, color, True, points)
+        self.draw_cities()
         self.text(msg)
         pygame.display.flip()
 
