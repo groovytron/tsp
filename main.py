@@ -3,7 +3,7 @@ import random
 from solution import Solution
 from city import City
 from gui import Gui
-
+import time
 
 def main():
     """
@@ -14,8 +14,8 @@ def main():
     # clé: nom de la ville, valeur: objet City
     cities = {}
 
-    # file_name = 'data/pb005.txt'
-    file_name = ''
+    file_name = 'data/pb005.txt'
+    # file_name = ''
 
     if file_name:
         with open(file_name, encoding='utf-8') as positions_file:
@@ -32,8 +32,13 @@ def main():
     cities = list(cities.values())
     population = []
 
-    POPULATION_SIZE = 12
+    max_time = 1
+    t1 = time.time()
+    POPULATION_SIZE = 10
     HALF = int(POPULATION_SIZE/2) # int car la division retourne un float dans tous les cas
+
+    RANGS = [POPULATION_SIZE-i for i in range(POPULATION_SIZE+1) for j in range(i)]
+    # RANGS contient n*0,  (n-1)*1 ... 1*9
 
     for i in range(POPULATION_SIZE):
         random.shuffle(cities)
@@ -41,17 +46,18 @@ def main():
 
     population.sort()
 
-    old_best = population[0]
-    gui.draw_path([city.position for city in old_best.cities])
+    gui.draw_path([city.position for city in population[0].cities])
+    old_best = population[0].fitness
     stagnation = 0
 
+    method_1 = True
 
     # algo génétique
     while True:
         # trier la population
         population.sort()
 
-        best = population[0]
+        best = Solution(population[0].cities)
 
         # selection : enlever la moitié
         # todo: selection par roulette ou par rang
@@ -65,29 +71,33 @@ def main():
             sol1 = population[i]
             sol2 = population[i+1]
             # ajoute les enfants à la population
-            population += sol1.crossing(sol2)
-            population += list(crossover(sol1, sol2))
+            if method_1:
+                population += sol1.crossing(sol2)
+            else:
+                population += list(crossover(sol1, sol2))
+            method_1 = not method_1
 
+        # population.remove(best)
         # muter 20% des solutions
         [solution.mutate() for solution in random.sample(population, int(0.2*len(population)))]
-
-        # temporaire : remplissage avec des solutions random
-        while len(population) < POPULATION_SIZE:
-            random.shuffle(cities)
-            population.append(Solution(cities))
+        population.append(best)
 
         # sortir si la meilleure solution est la même n fois de suite
-        if best == old_best:
+        if best.fitness == old_best:
             stagnation += 1
-            if stagnation == 500:
+            if not max_time and stagnation == 100:
                 break
         else:
             stagnation = 0
             gui.draw_path([city.position for city in best.cities], msg=str(best.fitness))
 
-        old_best = best
+        if max_time:
+            dt = time.time() - t1
+            if dt > max_time: break
 
-    gui.draw_path([city.position for city in best.cities], msg="voilà")
+        old_best = best.fitness
+
+    gui.draw_path([city.position for city in best.cities], msg=str(best.fitness), color=[0,255,0])
 
     gui.wait_for_user_input()
 
