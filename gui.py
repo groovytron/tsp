@@ -33,7 +33,7 @@ class Gui:
             event = pygame.event.wait()
             if (event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE)):
                 sys.exit(0)
-            elif event.type == KEYDOWN:
+            elif event.type == KEYDOWN and (event.key == K_RETURN or event.key == 32): # 32 = spacebar
                 break
 
     def place_cities(self):
@@ -64,9 +64,9 @@ class Gui:
             )
 
 
-    def draw_path(self, points, msg="" , color=[255,0,0]):
+    def draw_path(self, solution, msg="" , color=[255,0,0]):
         self.screen.fill(0)
-        pygame.draw.lines(self.screen, color, True, points)
+        pygame.draw.lines(self.screen, color, True, [city.position for city in solution.cities])
         self.draw_cities()
         self.text(msg)
         pygame.display.flip()

@@ -47,7 +47,7 @@ def main():
         population.append(Solution(cities))
 
     pseudo_best = Solution.create_pseudo_best(cities)
-    # gui.draw_path([city.position for city in pseudo_best.cities], msg="pseudo best with fitness:{}".format(pseudo_best.fitness), color=[255,255,0])
+    # gui.draw_path(pseudo_best, msg="pseudo best with fitness:{}".format(pseudo_best.fitness), color=[255,255,0])
     # gui.wait_for_user_input()
     population.append(pseudo_best)
 
@@ -92,19 +92,18 @@ def main():
                 population += list(crossover(sol1, sol2))
             method_1 = not method_1
 
-        # population.remove(best)
         # muter 20% des solutions
         [solution.mutate() for solution in random.sample(population, int(rate*len(population)))]
         population.append(best)
 
-        # sortir si la meilleure solution est la même n fois de suite
         if best.fitness == old_best:
             stagnation += 1
+            # sortir si la meilleure solution est la même n fois de suite
             if not max_time and stagnation == 100:
                 break
         else:
             stagnation = 0
-            gui.draw_path([city.position for city in best.cities], msg=str(best.fitness))
+            gui.draw_path(best, msg=str(best.fitness))
 
         if max_time:
             dt = time.time() - t1
@@ -112,7 +111,7 @@ def main():
 
         old_best = best.fitness
 
-    gui.draw_path([city.position for city in best.cities], msg=str(best.fitness), color=[0,255,0])
+    gui.draw_path(best, msg=str(best.fitness), color=[0,255,0])
     gui.wait_for_user_input()
 
 
