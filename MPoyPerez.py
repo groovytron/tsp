@@ -152,6 +152,8 @@ class Solution:
 
     @staticmethod
     def create_pseudo_best(cities):
+        # petite copie oklm pour ne pas toucher aux objets originaux
+        cities = list(cities)
         ordered_cities = []
         city = cities[0]
         ordered_cities.append(city)
@@ -187,7 +189,7 @@ class Gui:
             pygame.display.flip()
             self.wait_for_user_input()
         else:
-            self.cities = {}
+            self.cities = []
             self.place_cities()
 
     def wait_for_user_input(self):
@@ -208,8 +210,8 @@ class Gui:
                 if event.type == MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
                     name = "v{}".format(city_counter)
-                    self.cities[name] = City(name, pos)
-                    city_counter = city_counter + 1
+                    self.cities.append(City(name, pos))
+                    city_counter += + 1
                     self.screen.fill(0)
                     self.draw_cities()
                     self.text("Nombre: {}".format(len(self.cities)))
@@ -221,7 +223,7 @@ class Gui:
                         return
 
     def draw_cities(self):
-        for city in self.cities.values():
+        for city in self.cities:
             pygame.draw.circle(
                 self.screen, self.city_color, city.position, self.city_radius
             )
@@ -271,15 +273,13 @@ def shift_list(items, shifts):
         items = items[1:] + items[:1]
     return items
 
-def ga_solve(file=None, gui=True, maxtime=0):
+def ga_solve(file=None, gui=True, maxtime=0, maxstagnation=200):
     """
     Main function parsing file, initializing UI and launching genetic
     algorithm solving method.
     """
 
-    # dictionnaire contenant les villes
-    # clé: nom de la ville, valeur: objet City
-    cities = {}
+    cities = []
 
     # juste parce qu'on utilise deja une variable gui
     gui_diplay = gui
@@ -290,17 +290,16 @@ def ga_solve(file=None, gui=True, maxtime=0):
                 # pour chaque ligne, on crée une ville avec les coordonnées
                 # associées
                 cityname, x, y = line.split()
-                cities[cityname] = City(cityname, (int(x), int(y)))
+                cities.append(City(cityname, (int(x), int(y))))
             if gui_diplay:
                 gui = Gui(cities, file)
     else:
         gui = Gui()
         cities = gui.cities
 
+    # cities = list(cities)
 
     t1 = time.time()
-
-    cities = list(cities.values())
 
     POPULATION_SIZE = 100
     HALF = int(POPULATION_SIZE/2) # int car la division retourne un float dans tous les cas
@@ -367,7 +366,7 @@ def ga_solve(file=None, gui=True, maxtime=0):
         if best.fitness == old_best:
             stagnation += 1
             # sortir si la meilleure solution est la même n fois de suite
-            if not maxtime and stagnation == 100:
+            if not maxtime and stagnation == maxstagnation:
                 break
         else:
             stagnation = 0
@@ -395,11 +394,16 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--nogui", help="disable graphic user interface display", action="store_true")
-    parser.add_argument("--maxtime", help="specify maximum time in seconds", type=int)
-    parser.add_argument("--filename", help="use the file given as input")
+    parser.add_argument("-f", "--filename", help="use the file given as input")
+    parser.add_argument("-n", "--nogui", help="disable graphic user interface display", action="store_true")
+    parser.add_argument("-t", "--maxtime", help="specify the maximum time in seconds", type=int)
+    parser.add_argument("-s", "--maxstagnation", type=int, default=200,
+                        help="specify the number of iteration with stagnation before stopping the algorithm")
     args = parser.parse_args()
 
-    distance, path = ga_solve(file=args.filename, gui=not args.nogui, maxtime=args.maxtime)
+    distance, path = ga_solve(file=args.filename,
+                              gui=not args.nogui,
+                              maxtime=args.maxtime,
+                              maxstagnation=args.maxstagnation)
     print("Distance : {}\nPath : {}".format(distance, path))
 
