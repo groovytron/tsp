@@ -1,15 +1,22 @@
-###
-### imports
-###
 
-import time, copy, random, pygame, sys
+"""
+imports
+"""
+from math import ceil
+import time
+import copy
+import random
+import pygame
+import sys
 from operator import attrgetter
 from functools import total_ordering
 from pygame.locals import KEYDOWN, QUIT, MOUSEBUTTONDOWN, K_RETURN, K_ESCAPE, K_SPACE
 
-###
-### CITY
-###
+
+"""
+City class
+"""
+
 
 class City:
     """Class representing a city."""
@@ -45,12 +52,16 @@ class City:
         return closest
 
     def distance_to(self, other):
-        dx, dy = self.position[0] - other.position[0], self.position[1] - other.position[1]
+        dx, dy = (
+            self.position[0] - other.position[0],
+            self.position[1] - other.position[1]
+        )
         return (dx*dx + dy*dy) ** .5
 
-###
-### SOLUTION
-###
+"""
+Solution
+"""
+
 
 @total_ordering
 class Solution:
@@ -69,7 +80,8 @@ class Solution:
         old_city = self.cities[0]
         for city in self.cities + [old_city]:
             distance = old_city.distance_to(city)
-            # add to the fitness the distance between this city and the previous one
+            # add the distance between this city and
+            # the previous one to the fitness
             self.fitness += distance
             old_city.next = city
             old_city.dist = distance
@@ -88,9 +100,10 @@ class Solution:
 
     def crossing(self, mother):
         """
-        En partant d’une ville au hasard, considérer la ville suivante dans chacun des
-        parents et choisir la plus proche. Si celle-ci est déjà présente dans la solution, prendre
-        l’autre. Si elle est aussi déjà présente, choisir une ville non présente au hasard.
+        En partant d’une ville au hasard, considérer la ville suivante dans
+        chacun des parents et choisir la plus proche. Si celle-ci est déjà
+        présente dans la solution, prendre l’autre. Si elle est aussi déjà
+        présente, choisir une ville non présente au hasard.
         """
         children = []
         for i in range(2):
@@ -116,7 +129,8 @@ class Solution:
                     candidates.sort(key=attrgetter('dist'))
                     chosen_name = candidates[0].next.name
                 else:
-                    # on ne peut pas car 2 villes-next sont deja utilisées dans la nouvelle solution
+                    # on ne peut pas car 2 villes-next sont deja utilisées
+                    # dans la nouvelle solution
                     if names:
                         chosen_name = random.choice(names)
             children += [Solution(cities)]
@@ -124,10 +138,13 @@ class Solution:
         return children
 
     def mutate(self):
-        # inverse deux blocs (pas indispensable)
-        # ABCDEF devient
-        # CDEFAB
-        # la solution reste la même, ça permet juste de donner des chances au segment FA d'être muté
+        """
+        inverse deux blocs (pas indispensable)
+        ABCDEF devient CDEFAB
+
+        La solution reste la même, ça permet juste de donner des chances au
+        segment FA d'être muté.
+        """
         pivot = random.randrange(len(self.cities))
         self.cities = self.cities[pivot:] + self.cities[:pivot]
 
@@ -142,11 +159,11 @@ class Solution:
         # A <-- j
         # B
 
-        top = self.cities[:i] # CD
-        middle = self.cities[i:j] # EF
-        bottom = self.cities[j:] # AB
+        top = self.cities[:i]  # CD
+        middle = self.cities[i:j]  # EF
+        bottom = self.cities[j:]  # AB
         # reordonne les blocs
-        self.cities = middle + top + bottom # EFCDAB
+        self.cities = middle + top + bottom  # EFCDAB
 
         self.compute_fitness()
 
@@ -162,9 +179,10 @@ class Solution:
             cities.remove(city)
         return Solution(ordered_cities)
 
-###
-### GUI
-###
+"""
+GUI
+"""
+
 
 class Gui:
     """Gui screen using pygame."""
@@ -193,9 +211,14 @@ class Gui:
     def wait_for_user_input(self):
         while True:
             event = pygame.event.wait()
-            if (event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE)):
+            if (event.type == QUIT or (
+                    event.type == KEYDOWN and event.key == K_ESCAPE
+            )):
                 sys.exit(0)
-            elif event.type == KEYDOWN and (event.key == K_RETURN or event.key == K_SPACE):
+            elif (event.type == KEYDOWN and (
+                    event.key == K_RETURN or event.key == K_SPACE
+                )
+            ):
                 break
 
     def place_cities(self):
@@ -214,9 +237,15 @@ class Gui:
                     self.draw_cities()
                     self.text("Nombre: {}".format(len(self.cities)))
                     pygame.display.flip()
-                elif (event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE)):
+                elif (event.type == QUIT or (
+                        event.type == KEYDOWN and event.key == K_ESCAPE
+                    )
+                ):
                     sys.exit(0)
-                elif event.type == KEYDOWN and (event.key == K_RETURN or event.key == K_SPACE):
+                elif (event.type == KEYDOWN and (
+                    event.key == K_RETURN or event.key == K_SPACE
+                    )
+                ):
                     if(len(self.cities) > 2):
                         return
 
@@ -226,10 +255,11 @@ class Gui:
                 self.screen, self.city_color, city.position, self.city_radius
             )
 
-
-    def draw_path(self, solution, msg="" , color=[255,0,0]):
+    def draw_path(self, solution, msg="", color=[255, 0, 0]):
         self.screen.fill(0)
-        pygame.draw.lines(self.screen, color, True, [city.position for city in solution.cities])
+        pygame.draw.lines(self.screen, color, True, [
+            city.position for city in solution.cities]
+        )
         self.draw_cities()
         self.text(msg)
         pygame.display.flip()
@@ -238,19 +268,30 @@ class Gui:
         text = self.font.render(msg, True, self.font_color)
         textRect = text.get_rect()
         self.screen.blit(text, textRect)
-        if render: pygame.display.flip()
+        if render:
+            pygame.display.flip()
 
-###
-### ALGORITHM
-###
+"""
+Algorithme
+"""
 
-def crossover(x, y, start=2, stop=4):
+
+def crossover(x, y, crossover_ratio=0.3):
     """
     Crossover x and y indviduals' genes at indices between start and stop.
 
     The two children are generated and returned as a tuple containing.
     """
-    x,y = x.cities, y.cities
+    x, y = x.cities, y.cities
+    genes_to_crossover = int(ceil(len(x) * crossover_ratio))
+    start = random.randint(0, len(x) - genes_to_crossover - 1)
+    stop = start + genes_to_crossover
+    # with open('debug.txt', 'a') as f:
+    #     f.write('longueur du tableau: %d\n' % len(x))
+    #     f.write('nombre de gênes à modifier: %d\n' % genes_to_crossover)
+    #     f.write('start: %d\n' % start)
+    #     f.write('stop: %d\n' % stop)
+    #     f.close()
     x_crossover = tuple(x[start:stop])
     y_crossover = tuple(y[start:stop])
     prepared_x = [item if item not in y_crossover else None for item in x]
@@ -265,11 +306,13 @@ def crossover(x, y, start=2, stop=4):
     new_y = new_y[:start] + list(x_crossover) + new_y[start:]
     return Solution(new_x), Solution(new_y)
 
+
 def shift_list(items, shifts):
     """Left shift a list of elements."""
     for i in range(shifts):
         items = items[1:] + items[:1]
     return items
+
 
 def ga_solve(file=None, gui=True, maxtime=0):
     """
@@ -297,19 +340,24 @@ def ga_solve(file=None, gui=True, maxtime=0):
         gui = Gui()
         cities = gui.cities
 
-
     t1 = time.time()
 
     cities = list(cities.values())
 
     POPULATION_SIZE = 100
-    HALF = int(POPULATION_SIZE/2) # int car la division retourne un float dans tous les cas
+    """ int car la division retourne un float dans tous les cas """
+    HALF = int(POPULATION_SIZE/2)
     QUARTER = int(POPULATION_SIZE/4)
     # taux de mutation
     rate = 0.2
 
-    RANGS = [POPULATION_SIZE-i for i in range(POPULATION_SIZE+1) for j in range(i)]
-    # RANGS contient n*0,  (n-1)*1 ... 1*n -> exemple 10, 9,9, 8,8,8, 7,7,7,7, ...
+    """
+    RANGS contient n*0,  (n-1)*1 ... 1*n
+        -> exemple 10, 9,9, 8,8,8, 7,7,7,7, ...
+    """
+    RANGS = [
+        POPULATION_SIZE-i for i in range(POPULATION_SIZE+1) for j in range(i)
+    ]
 
     population = []
     for i in range(POPULATION_SIZE):
@@ -317,11 +365,14 @@ def ga_solve(file=None, gui=True, maxtime=0):
         population.append(Solution(cities))
 
     pseudo_best = Solution.create_pseudo_best(cities)
-    # gui.draw_path(pseudo_best, msg="pseudo best with fitness:{}".format(pseudo_best.fitness), color=[255,255,0])
+    # gui.draw_path(pseudo_best, msg="pseudo best with fitness:{}".format(
+    #       pseudo_best.fitness
+    #   ), color=[255,255,0]
+    # )
     # gui.wait_for_user_input()
     population.append(pseudo_best)
 
-    old_best=0
+    old_best = 0
     stagnation = 0
 
     method_1 = True
@@ -350,7 +401,7 @@ def ga_solve(file=None, gui=True, maxtime=0):
         random.shuffle(population)
 
         # croisement
-        for i in range(0, HALF, 2): # 0 to HALF 2-by-2
+        for i in range(0, HALF, 2):  # 0 to HALF 2-by-2
             sol1 = population[i]
             sol2 = population[i+1]
             # ajoute les enfants à la population
@@ -361,7 +412,11 @@ def ga_solve(file=None, gui=True, maxtime=0):
             method_1 = not method_1
 
         # muter 20% des solutions
-        [solution.mutate() for solution in random.sample(population, int(rate*len(population)))]
+        [
+            solution.mutate() for solution in random.sample(
+                population, int(rate * len(population))
+            )
+        ]
         population.append(best)
 
         if best.fitness == old_best:
@@ -376,30 +431,42 @@ def ga_solve(file=None, gui=True, maxtime=0):
 
         if maxtime:
             dt = time.time() - t1
-            if dt > maxtime: break
+            if dt > maxtime:
+                break
 
         old_best = best.fitness
 
     if gui_diplay:
-        gui.draw_path(best, msg=str(best.fitness), color=[0,255,0])
+        gui.draw_path(best, msg=str(best.fitness), color=[0, 255, 0])
         gui.wait_for_user_input()
 
     path = [city.name for city in best.cities]
     return best.fitness, path
 
-###
-### MAIN
-###
-
+"""
+MAIN
+"""
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--nogui", help="disable graphic user interface display", action="store_true")
-    parser.add_argument("--maxtime", help="specify maximum time in seconds", type=int)
-    parser.add_argument("--filename", help="use the file given as input")
+    parser.add_argument(
+        "--nogui",
+        help="disable graphic user interface display",
+        action="store_true"
+    )
+    parser.add_argument(
+        "--maxtime",
+        help="specify maximum time in seconds",
+        type=int
+    )
+    parser.add_argument(
+        "--filename",
+        help="use the file given as input"
+    )
     args = parser.parse_args()
 
-    distance, path = ga_solve(file=args.filename, gui=not args.nogui, maxtime=args.maxtime)
+    distance, path = ga_solve(
+        file=args.filename, gui=not args.nogui, maxtime=args.maxtime
+    )
     print("Distance : {}\nPath : {}".format(distance, path))
-
