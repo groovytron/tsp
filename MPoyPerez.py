@@ -3,6 +3,7 @@
 imports
 """
 from math import ceil
+from itertools import chain
 import time
 import copy
 import random
@@ -10,7 +11,10 @@ import pygame
 import sys
 from operator import attrgetter
 from functools import total_ordering
-from pygame.locals import KEYDOWN, QUIT, MOUSEBUTTONDOWN, K_RETURN, K_ESCAPE, K_SPACE
+from pygame.locals import (
+    KEYDOWN, QUIT, MOUSEBUTTONDOWN, K_RETURN, K_ESCAPE,
+    K_SPACE
+)
 
 
 """
@@ -78,7 +82,7 @@ class Solution:
         self.dict = {}
 
         old_city = self.cities[0]
-        for city in self.cities + [old_city]:
+        for city in chain(self.cities + [old_city]):
             distance = old_city.distance_to(city)
             # add the distance between this city and
             # the previous one to the fitness
@@ -98,57 +102,18 @@ class Solution:
     def __repr__(self):
         return "solution with fitness {}".format(self.fitness)
 
-    def crossing(self, mother):
-        """
-        En partant d’une ville au hasard, considérer la ville suivante dans
-        chacun des parents et choisir la plus proche. Si celle-ci est déjà
-        présente dans la solution, prendre l’autre. Si elle est aussi déjà
-        présente, choisir une ville non présente au hasard.
-        """
-        children = []
-        for i in range(2):
-            father = self
-            cities = []
-            names = [city.name for city in self.cities]
-            chosen_name = random.choice(names)
-            while len(names) > 0:
-                names.remove(chosen_name)
-                current_city = self.dict[chosen_name]
-                cities.append(current_city)
-                from_father = father.dict[chosen_name]
-                from_mother = mother.dict[chosen_name]
-
-                candidates = []
-                if from_father.next.name in names:
-                    candidates += [from_father]
-                if from_mother.next.name in names:
-                    candidates += [from_mother]
-
-                if len(candidates) > 0:
-                    # on peut utlisier un gene de l'un des parents
-                    candidates.sort(key=attrgetter('dist'))
-                    chosen_name = candidates[0].next.name
-                else:
-                    # on ne peut pas car 2 villes-next sont deja utilisées
-                    # dans la nouvelle solution
-                    if names:
-                        chosen_name = random.choice(names)
-            children += [Solution(cities)]
-
-        return children
-
     def mutate(self):
         """
-        inverse deux blocs (pas indispensable)
-        ABCDEF devient CDEFAB
+        two blocks inversion (not indispensable)
+        ABCDEF becomes CDEFAB
 
-        La solution reste la même, ça permet juste de donner des chances au
-        segment FA d'être muté.
+        The solution keeps the same, it only gives more chances to the FA
+        segment to be muted.
         """
         pivot = random.randrange(len(self.cities))
         self.cities = self.cities[pivot:] + self.cities[:pivot]
 
-        # i <- borne inférieure, j <- borne supérieure
+        # i <- minimum born, j <- maximum born
         i = random.randrange(len(self.cities)-1)
         j = random.randrange(i+1, len(self.cities))
 
@@ -162,7 +127,7 @@ class Solution:
         top = self.cities[:i]  # CD
         middle = self.cities[i:j]  # EF
         bottom = self.cities[j:]  # AB
-        # reordonne les blocs
+        # tidying block
         self.cities = middle + top + bottom  # EFCDAB
 
         self.compute_fitness()
@@ -276,9 +241,51 @@ Algorithme
 """
 
 
-def crossover(x, y, crossover_ratio=0.3):
+def perez_crossover(father, mother):
     """
-    Crossover x and y indviduals' genes at indices between start and stop.
+    Starting from a city randomly selected, we check both parents'
+    nex city and choose the closest one. If this city is already present
+    in the solution, we take the other parent's one. If this city is
+    already in the solution too, we choose an other city randomly.
+    """
+    children = []
+    for i in range(2):
+        cities = []
+        names = [city.name for city in father.cities]
+        chosen_name = random.choice(names)
+        while len(names) > 0:
+            names.remove(chosen_name)
+            current_city = father.dict[chosen_name]
+            cities.append(current_city)
+            from_father = father.dict[chosen_name]
+            from_mother = mother.dict[chosen_name]
+
+            candidates = []
+            if from_father.next.name in names:
+                candidates += [from_father]
+            if from_mother.next.name in names:
+                candidates += [from_mother]
+
+            if len(candidates) > 0:
+                # we can use a gene from one the parents
+                candidates.sort(key=attrgetter('dist'))
+                chosen_name = candidates[0].next.name
+            else:
+                """
+                we cannot because both cities are already in the solution
+                we are building.
+                """
+                if names:
+                    chosen_name = random.choice(names)
+        children += [Solution(cities)]
+
+    return children
+
+
+def mpoy_crossover(x, y, crossover_ratio=0.3):
+    """
+    OX Crossover between x and y indviduals. Crossover section is defined
+    randomly following the crossover_ration parameter.
 
     The two children are generated and returned as a tuple containing.
     """
@@ -286,12 +293,6 @@ def crossover(x, y, crossover_ratio=0.3):
     genes_to_crossover = int(ceil(len(x) * crossover_ratio))
     start = random.randint(0, len(x) - genes_to_crossover - 1)
     stop = start + genes_to_crossover
-    # with open('debug.txt', 'a') as f:
-    #     f.write('longueur du tableau: %d\n' % len(x))
-    #     f.write('nombre de gênes à modifier: %d\n' % genes_to_crossover)
-    #     f.write('start: %d\n' % start)
-    #     f.write('stop: %d\n' % stop)
-    #     f.close()
     x_crossover = tuple(x[start:stop])
     y_crossover = tuple(y[start:stop])
     prepared_x = [item if item not in y_crossover else None for item in x]
@@ -320,18 +321,17 @@ def ga_solve(file=None, gui=True, maxtime=0):
     algorithm solving method.
     """
 
-    # dictionnaire contenant les villes
-    # clé: nom de la ville, valeur: objet City
+    # dictionnary containing the cities
+    # key: city's name, value: City object
     cities = {}
 
-    # juste parce qu'on utilise deja une variable gui
+    # just because we are already using a gui variable
     gui_diplay = gui
 
     if file:
         with open(file, encoding='utf-8') as positions_file:
             for line in positions_file:
-                # pour chaque ligne, on crée une ville avec les coordonnées
-                # associées
+                # for each line, we create a City object with the coordinates
                 cityname, x, y = line.split()
                 cities[cityname] = City(cityname, (int(x), int(y)))
             if gui_diplay:
@@ -344,16 +344,16 @@ def ga_solve(file=None, gui=True, maxtime=0):
 
     cities = list(cities.values())
 
-    POPULATION_SIZE = 100
-    """ int car la division retourne un float dans tous les cas """
+    POPULATION_SIZE = 20
+    # int beacause division always returns a float
     HALF = int(POPULATION_SIZE/2)
     QUARTER = int(POPULATION_SIZE/4)
     # taux de mutation
     rate = 0.2
 
     """
-    RANGS contient n*0,  (n-1)*1 ... 1*n
-        -> exemple 10, 9,9, 8,8,8, 7,7,7,7, ...
+    RANGS contains n*0,  (n-1)*1 ... 1*n
+        -> example 10, 9,9, 8,8,8, 7,7,7,7, ...
     """
     RANGS = [
         POPULATION_SIZE-i for i in range(POPULATION_SIZE+1) for j in range(i)
@@ -365,11 +365,6 @@ def ga_solve(file=None, gui=True, maxtime=0):
         population.append(Solution(cities))
 
     pseudo_best = Solution.create_pseudo_best(cities)
-    # gui.draw_path(pseudo_best, msg="pseudo best with fitness:{}".format(
-    #       pseudo_best.fitness
-    #   ), color=[255,255,0]
-    # )
-    # gui.wait_for_user_input()
     population.append(pseudo_best)
 
     old_best = 0
@@ -377,41 +372,41 @@ def ga_solve(file=None, gui=True, maxtime=0):
 
     method_1 = True
 
-    # algo génétique
+    # genetic algorithm
     while True:
-        # trier la population
+        # population sorting
         population.sort()
 
         best = Solution(population[0].cities)
 
-        # population = population[:HALF] # sélectionne la moitié meilleure
+        # population = population[:HALF] # selects half of the best solutions
 
-        # selection un peu plus naturelle
-        # selectionne un quart d'élite
+        # more natural selection
+        # select a quarter of the best solutions
         population = population[:QUARTER]
-        # puis sélectionne un autre quart au pif
-        # reste = population[QUARTER:]
+        # the select an other quarter randomly
+        # population[QUARTER:] remains
         population += random.sample(population, QUARTER)
 
-        # # plus juste mais marche moins bien
+        # seems more correct but works gives worse results
         # elite, reste = population[:QUARTER], population[QUARTER:]
         # population = elite + random.sample(population, QUARTER)
 
-        # mélange la population
+        # population shuffling
         random.shuffle(population)
 
-        # croisement
+        # crossover
         for i in range(0, HALF, 2):  # 0 to HALF 2-by-2
             sol1 = population[i]
             sol2 = population[i+1]
-            # ajoute les enfants à la population
+            # add children to the population
             if method_1:
-                population += sol1.crossing(sol2)
+                population += perez_crossover(sol1, sol2)
             else:
-                population += list(crossover(sol1, sol2))
+                population += list(mpoy_crossover(sol1, sol2))
             method_1 = not method_1
 
-        # muter 20% des solutions
+        # muate 20% of the solutions
         [
             solution.mutate() for solution in random.sample(
                 population, int(rate * len(population))
@@ -421,7 +416,7 @@ def ga_solve(file=None, gui=True, maxtime=0):
 
         if best.fitness == old_best:
             stagnation += 1
-            # sortir si la meilleure solution est la même n fois de suite
+            # stop if the best solution is the same n time consequently
             if not maxtime and stagnation == 100:
                 break
         else:
