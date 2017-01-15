@@ -1,6 +1,15 @@
-
 """
-imports
+Script solving the famous Travel Salesman Problem (aka TSP).
+
+Script can be given the following parameters:
+    * --nogui: Disables graphic user interface display.
+    * --maxtime N: Specifies maximum time in seconds for the script to look for
+        a solution.
+    * --filename FILE: Uses the file given as input to set the cities list.
+
+Authors: M'Poy Julien & Perez Joaquim
+Date: 15.01.2017
+Location: Haute École Arc, Neuchâtel
 """
 from math import ceil
 from itertools import chain
@@ -241,7 +250,7 @@ Algorithme
 """
 
 
-def perez_crossover(father, mother):
+def crossover_from_best_in_parents(father, mother):
     """
     Starting from a city randomly selected, we check both parents'
     nex city and choose the closest one. If this city is already present
@@ -282,7 +291,7 @@ def perez_crossover(father, mother):
     return children
 
 
-def mpoy_crossover(x, y, crossover_ratio=0.3):
+def ox_crossover(x, y, crossover_ratio=0.3):
     """
     OX Crossover between x and y indviduals. Crossover section is defined
     randomly following the crossover_ration parameter.
@@ -401,9 +410,9 @@ def ga_solve(file=None, gui=True, maxtime=0):
             sol2 = population[i+1]
             # add children to the population
             if method_1:
-                population += perez_crossover(sol1, sol2)
+                population += crossover_from_best_in_parents(sol1, sol2)
             else:
-                population += list(mpoy_crossover(sol1, sol2))
+                population += list(ox_crossover(sol1, sol2))
             method_1 = not method_1
 
         # muate 20% of the solutions
