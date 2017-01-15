@@ -2,10 +2,12 @@
 Script solving the famous Travel Salesman Problem (aka TSP).
 
 Script can be given the following parameters:
-    * --nogui: Disables graphic user interface display.
-    * --maxtime N: Specifies maximum time in seconds for the script to look for
+    * --nogui: disables graphic user interface display.
+    * --maxtime N: specifies maximum time in seconds for the script to look for
         a solution.
-    * --filename FILE: Uses the file given as input to set the cities list.
+    * --filename FILE: uses the file given as input to set the cities list.
+    * --maxstagnation N: specifies the number of iterations with stagnation
+        before stopping the algorithm.
 
 Authors: M'Poy Julien & Perez Joaquim
 Date: 15.01.2017
@@ -143,6 +145,8 @@ class Solution:
 
     @staticmethod
     def create_pseudo_best(cities):
+        # petite copie oklm pour ne pas toucher aux objets originaux
+        cities = list(cities)
         ordered_cities = []
         city = cities[0]
         ordered_cities.append(city)
@@ -179,7 +183,7 @@ class Gui:
             pygame.display.flip()
             self.wait_for_user_input()
         else:
-            self.cities = {}
+            self.cities = []
             self.place_cities()
 
     def wait_for_user_input(self):
@@ -205,8 +209,8 @@ class Gui:
                 if event.type == MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
                     name = "v{}".format(city_counter)
-                    self.cities[name] = City(name, pos)
-                    city_counter = city_counter + 1
+                    self.cities.append(City(name, pos))
+                    city_counter += + 1
                     self.screen.fill(0)
                     self.draw_cities()
                     self.text("Nombre: {}".format(len(self.cities)))
@@ -224,7 +228,7 @@ class Gui:
                         return
 
     def draw_cities(self):
-        for city in self.cities.values():
+        for city in self.cities:
             pygame.draw.circle(
                 self.screen, self.city_color, city.position, self.city_radius
             )
@@ -324,7 +328,7 @@ def shift_list(items, shifts):
     return items
 
 
-def ga_solve(file=None, gui=True, maxtime=0):
+def ga_solve(file=None, gui=True, maxtime=0, maxstagnation=200):
     """
     Main function parsing file, initializing UI and launching genetic
     algorithm solving method.
@@ -332,7 +336,7 @@ def ga_solve(file=None, gui=True, maxtime=0):
 
     # dictionnary containing the cities
     # key: city's name, value: City object
-    cities = {}
+    cities = []
 
     # just because we are already using a gui variable
     gui_diplay = gui
@@ -342,7 +346,7 @@ def ga_solve(file=None, gui=True, maxtime=0):
             for line in positions_file:
                 # for each line, we create a City object with the coordinates
                 cityname, x, y = line.split()
-                cities[cityname] = City(cityname, (int(x), int(y)))
+                cities.append(City(cityname, (int(x), int(y))))
             if gui_diplay:
                 gui = Gui(cities, file)
     else:
@@ -351,13 +355,11 @@ def ga_solve(file=None, gui=True, maxtime=0):
 
     t1 = time.time()
 
-    cities = list(cities.values())
-
     POPULATION_SIZE = 20
     # int because division always returns a float
     HALF = int(POPULATION_SIZE/2)
     QUARTER = int(POPULATION_SIZE/4)
-    # taux de mutation
+    # mutation rate
     rate = 0.2
 
     """
@@ -426,7 +428,7 @@ def ga_solve(file=None, gui=True, maxtime=0):
         if best.fitness == old_best:
             stagnation += 1
             # stop if the best solution is the same n time consequently
-            if not maxtime and stagnation == 100:
+            if not maxtime and stagnation == maxstagnation:
                 break
         else:
             stagnation = 0
@@ -454,23 +456,26 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--filename", help="use the file given as input")
     parser.add_argument(
-        "--nogui",
-        help="disable graphic user interface display",
-        action="store_true"
+        "-n", "--nogui",
+        help="disable graphic user interface display", action="store_true"
     )
     parser.add_argument(
-        "--maxtime",
-        help="specify maximum time in seconds",
-        type=int
+        "-t", "--maxtime", help="specify the maximum time in seconds", type=int
     )
     parser.add_argument(
-        "--filename",
-        help="use the file given as input"
+        "-s", "--maxstagnation", type=int, default=200,
+        help="specify the number of iteration with \
+            stagnation before stopping the algorithm"
     )
     args = parser.parse_args()
 
     distance, path = ga_solve(
-        file=args.filename, gui=not args.nogui, maxtime=args.maxtime
+        file=args.filename,
+        gui=not args.nogui,
+        maxtime=args.maxtime,
+        maxstagnation=args.maxstagnation
     )
+
     print("Distance : {}\nPath : {}".format(distance, path))
