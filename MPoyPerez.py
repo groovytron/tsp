@@ -354,7 +354,7 @@ def ga_solve(file=None, gui=True, maxtime=0):
     cities = list(cities.values())
 
     POPULATION_SIZE = 20
-    # int beacause division always returns a float
+    # int because division always returns a float
     HALF = int(POPULATION_SIZE/2)
     QUARTER = int(POPULATION_SIZE/4)
     # taux de mutation
